@@ -14,6 +14,7 @@ function reset()
 		done
 	done
 }
+
 #check the player
 function checkPlayer()
 {
@@ -25,4 +26,16 @@ randomCheck=$((RANDOM%2))
 		player=O
 	fi
 		echo $player
+}
+
+#checking for the player who play first
+function toss()
+{
+	playerCheck=$((RANDOM%2))
+	if (($playerCheck==0))
+	then
+		echo "player x will play first"
+	else
+		echo "player o will play first"
+	fi
 }
