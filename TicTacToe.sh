@@ -39,3 +39,16 @@ function toss()
 		echo "player o will play first"
 	fi
 }
+
+#game board
+function board()
+{
+	for ((i=0; i<$ROW; i++))
+	do
+		for ((j=0; j<$COLUMN; j++))
+		do
+			printf "|${index[$i,$j]}|"
+		done
+			echo " "
+	done
+}
