@@ -1,63 +1,68 @@
 #!/bin/bash -x
 
 echo ____________Welcome_______________
+
+#CONSTANTS
 ROW=3
 COLUMN=3
-LAST=1
 LENGTH=$(($ROW*$COLUMN))
+
+#VARIABLE
+LAST=1
+
 declare -A index
-#Resetting the board
-function reset()
-{
-	for ((i=0; i<$ROW; i++))
+
+#RESETTING THE index
+function reset(){
+	for (( i=0; i<$ROW; i++ ))
 	do
-		for ((j=0; j<$COLUMN; j++))
+		for (( j=0; count1<$j; j++ ))
 		do
 			index[$i,$j]=0
 		done
 	done
 }
 
-function limit()
-{
-	for ((count=0; count<$ROW; count++))
+#INITIALIZING BOARD
+function initializeBoard(){
+	for (( i=0; i<ROW; i++ ))
 	do
-		for ((count2=0; count2<$COLUMN; count2++))
+		for (( j=0; j<COLUMN; j++ ))
 		do
-			index[$count,$count2]=$LAST
+			index[$i,$j]=$LAST
 			((LAST++))
 		done
 	done
 }
 
-#check the player
-function checkPlayer()
-{
-	randomCheck=$((RANDOM%2))
-	if (($randomCheck==0))
+#ASSIGNING PLAYER'S SYMBOL
+function checkPlayer(){
+	if [ $((RANDOM%2)) -eq 0 ]
 	then
-		player=X
+		Player=X
+		Computer=O
 	else
-		player=O
+		Computer=X
+		Player=O
 	fi
-	echo $player
+	echo "Symbol for Player is "$Player
 }
 
-#checking for the player who play first
-function toss()
-{
-	playerCheck=$((RANDOM%2))
-	if (($playerCheck==0))
+#TOSS
+function toss(){
+	if [ $((RANDOM%2)) -eq 0 ]
 	then
-		echo "player x will play first"
+		flag=1
+		echo "Player turn"
 	else
-		echo "player o will play first"
+		flag=0
+		echo "Computer turn"
 	fi
 }
 
-function board()
-{
-	for ((i=0; i<$ROW; i++))
+#DISPLAY BOARD
+function board(){
+for ((i=0; i<$ROW; i++))
 	do
 		for ((j=0; j<$COLUMN; j++))
 		do
@@ -67,73 +72,218 @@ function board()
 	done
 }
 
-function playerInput()
-{
-	for ((count=0; count<$LENGTH; count++))
+#GETTING INPUT
+function getInput(){
+	for (( i=0; i<$LENGTH; i++ ))
 	do
-		board
-		read -p "enter the position" position
-		if [ $position -gt $LENGTH ]
+ 		board
+		if [ $flag -eq 1 ]
 		then
-			echo "Invalid Number"
-			((count--))
-		else
-			rowNumber=$(($position / $ROW))
-			if [ $(($position % $ROW)) -eq 0 ]
+			read -p "Enter a position " position
+			if [ $position -gt $LENGTH ]
 			then
-				rowNumber=$(($rowNumber-1))
-			fi
- 				columnNumber=$(($position % $COLUMN))
-				if (($columnNumber == 0))
-				then
-					columnNumber=$(($columnNumber+2))
+				echo "Invalid Moves"
+				((i--))
 				else
-					columnNumber=$(($columnNumber-1))
-				fi
-				index[$rowNumber,$columnNumber]=$player
-				if [ $(firstDiagonal) -eq 1 ]
+					rowIndex=$(( $position / $ROW ))
+				if [ $(( $position % $ROW )) -eq 0 ]
 				then
-					echo "Winner"
-					return 0
+					rowIndex=$(( $rowIndex-1 ))
 				fi
+					columnIndex=$(( $position % $COLUMN ))
+				if [ $columnIndex -eq 0 ]
+				then
+					columnIndex=$(($columnIndex+2))
+				else
+					columnIndex=$(($columnIndex-1))
+				fi
+				#CHECKING VALIDATION FOR OVERLAPPING
+				if [ "${index[$rowIndex,$columnIndex]}" == "$Player" ] || [ "${index[$rowIndex,$columnIndex]}" == "$Computer" ]
+				then
+					echo "Invalid move, Cell already filled"
+					printf "\n"
+					((i--))
+				else
+					index[$rowIndex,$columnIndex]=$Player
+					flag=0
+					if [ $(checkResult $Player) -eq 1 ]
+					then
+						echo "You Win"
+						return 0
+					fi
+				fi
+			fi
+      	else
+				echo "Computer Turn"
+				computerTurn
+				flag=1
+			if [ $(checkResult $Computer) -eq 1 ]
+			then
+				echo "Computer Won"
+				return 0
+			fi
 		fi
 	done
+		echo "Match Tie"
 }
 
-#winner function
-function firstDiagonal()
-{
-	if [ ${index[0,0]} == $player ] && [ ${index[0,1]} == $player ] && [ ${index[0,2]} == $player ]
+#CHECK'S WINNER
+function checkResult(){
+   turn=$1
+   if [ ${index[0,0]} == $turn ] && [ ${index[0,1]} == $turn ] && [ ${index[0,2]} == $turn ]
+   then
+      echo 1
+   elif [ ${index[1,0]} == $turn ] && [ ${index[1,1]} == $turn ] && [ ${index[1,2]} == $turn ]
+   then
+      echo 1
+   elif [ ${index[2,0]} == $turn ] && [ ${index[2,1]} == $turn ] && [ ${index[2,2]} == $turn ]
+   then
+      echo 1
+   elif [ ${index[0,0]} == $turn ] && [ ${index[1,0]} == $turn ] && [ ${index[2,0]} == $turn ]
+   then
+      echo 1
+   elif [ ${index[0,1]} == $turn ] && [ ${index[1,1]} == $turn ] && [ ${index[2,1]} == $turn ]
+   then
+      echo 1
+   elif [ ${index[0,2]} == $turn ] && [ ${index[1,2]} == $turn ] && [ ${index[2,2]} == $turn ]
+   then
+      echo 1
+   elif [ ${index[0,0]} == $turn ] && [ ${index[1,1]} == $turn ] && [ ${index[2,2]} == $turn ]
+   then
+      echo 1
+   elif [ ${index[0,2]} == $turn ] && [ ${index[1,1]} == $turn ] && [ ${index[2,0]} == $turn ]
+   then
+      echo 1
+   else
+      echo 0
+   fi
+}
+
+function  computerTurn(){
+   #checking the rOWS
+	local row=0
+	local col=0
+   for ((row=0; row<ROW; row++))
+   do
+      if [ ${index[$row,$col]} == $Player ] && [ ${index[$(($row)),$(($col+1))]} == $Player ]
+      then
+          if [ ${index[$row,$(($col+2))]} != $Computer ]
+          then
+             index[$row,$(($col+2))]=$Computer
+             break
+          fi
+      elif [ ${index[$row,$(($col+1))]} == $Player ] && [ ${index[$row,$(($col+2))]} == $Player ]
+      then
+          if [ ${index[$row,$col]} != $Computer ]
+          then
+             index[$row,$col]=$Computer
+             break
+          fi
+      elif [ ${index[$row,$col]} == $Player ] && [ ${index[$row,$(($col+2))]} == $Player ]
+      then
+          if [ ${index[$row,$(($col+1))]} != $Computer ]
+          then
+             index[$row,$(($col+1))]=$Computer
+             break
+          fi
+      fi
+   done
+
+   #checking the cOLUMN
+   local row=0
+   local col=0
+   for ((col=0; col<COLUMN; col++))
+   do
+      if [ ${index[$row,$col]} == $Player ] &&  [ ${index[$(($row+1)),$col]} == $Player ]
+      then
+         if [ ${index[$(($row+2)),$col]} != $Computer ]
+         then
+            index[$(($row+2)),$col]=$Computer
+            break
+         fi
+      elif [ ${index[$(($row+1)),$col]} == $Player ] && [ ${index[$(($row+2)),$col]} == $Player ]
+      then
+         if [ ${index[$row,$col]} != $Computer ]
+         then
+            index[$row,$col]=$Computer
+            break
+          fi
+      elif [ ${index[$row,$col]} == $Player ] && [ ${index[$(($row+2)),$col]} == $Player ]
+      then
+         if [ ${index[$(($row+1)),$col]} != $Computer ]
+         then
+            index[$(($row+1)),$col]=$Computer
+            break
+         fi
+      fi
+   done
+
+#checking the dIAGONAL
+local row=0
+local col=0
+if [ ${index[$row,$col]} == $Player ] &&  [ ${index[$(($row+1)),$(($col+1))]} == $Player ]
+then
+	if [ ${index[$(($row+2)),$(($col+2))]} != $Computer ]
 	then
-		echo 1
-	elif [ ${index[1,0]} == $player ] && [ ${index[1,1]} == $player ] && [ ${index[1,2]} == $player ]
+		index[$(($row+2)),$(($col+2))]=$Computer
+		return
+	fi
+	elif [ ${index[$(($row+1)),$(($col+1))]} == $Player ] && [ ${index[$(($row+2)),$(($col+2))]} == $Player ]
 	then
-		echo 1
-	elif [ ${index[2,0]} == $player ] && [ ${index[2,1]} == $player ] && [ ${index[2,2]} == $player ]
-	then
-		echo 1
-	elif [ ${index[0,0]} == $player ] && [ ${index[1,0]} == $player ] && [ ${index[2,0]} == $player ]
-	then
-		echo 1
-	elif [ ${index[0,2]} == $player ] && [ ${index[1,2]} == $player ] && [ ${index[2,2]} == $player ]
-	then
-		echo 1
-	elif [ ${index[0,1]} == $player ] && [ ${index[1,1]} == $player ] && [ ${index[2,1]} == $player ]
+		if [ ${index[$row,$col]} != $Computer ]
 		then
-		echo 1
-	elif [ ${index[0,0]} == $player ] && [ ${index[1,1]} == $player ] && [ ${index[2,2]} == $player ]
-	then
-		echo 1
-	elif [ ${index[0,2]} == $player ] && [ ${index[1,1]} == $player ] && [ ${index[2,0]} == $player ]	
-	then
-		echo 1
-	else
-	echo 0
+			index[$row,$col]=$Computer
+ 			return
+ 		fi
+		elif [ ${index[$row,$col]} == $Player ] && [ ${index[$(($row+2)),$(($col+2))]} == $Player ]
+		then
+		if [ ${index[$(($row+1)),$(($col+1))]} != $Computer ]
+		then
+			index[$(($row+1)),$(($col+1))]=$Computer
+			return
+		fi
+ 		elif [ ${index[$(($row+2)),$col]} == $Player ] &&  [ ${index[$(($row+1)),$(($col+1))]} == $Player ]
+		then
+			if [ ${index[$row,$(($col+2))]} != $Computer ]
+			then
+				index[$row,$(($col+2))]=$Computer
+				return
+			fi
+			elif [ ${index[$(($row+1)),$(($col+1))]} == $Player ] && [ ${index[$row,$(($col+2))]} == $Player ]
+			then
+				if [ ${index[$(($row+2)),$col]} != $Computer ]
+				then
+					index[$(($row+2)),$col]=$Computer
+					return
+			fi
+			elif [ ${index[$(($row+2)),$col]} == $Player ] && [ ${index[$row,$(($col+2))]} == $Player ]
+			then
+				if [ ${index[$(($row+1)),$(($col+1))]} != $Computer ]
+				then
+					index[$(($row+1)),$(($col+1))]=$Computer
+					return
+			fi
+			else
+			while [ true ]
+			do
+				local row=$(( RANDOM % $ROW ))
+				local col=$(( RANDOM % $COLUMN ))
+				if [ ${index[$row,$col]} == $Player ] || [ ${index[$row,$col]} == $Computer ]
+				then
+				continue
+				else
+					index[$row,$col]=$Computer
+					break
+			fi
+		done
 	fi
 }
+
+
+corners
 reset
-limit
 checkPlayer
 toss
-playerInput
+initializeBoard
+getInput
 board
