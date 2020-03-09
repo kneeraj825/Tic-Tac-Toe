@@ -189,7 +189,7 @@ function  computerTurn(){
       fi
    done
 
-   #checking the cOLUMN
+   #checking the column
    local row=0
    local col=0
    for ((col=0; col<COLUMN; col++))
@@ -279,33 +279,43 @@ then
 	fi
 }
 
-#checking the corners
-function corners(){
-	if [ ${index[0,0]} != $Player ] && [ ${index[0,0]} != $Computer ]
-	then
-		index[0,0]=$Computer
-		return
-	elif [ ${index[0,2]} != $Player ] && [ ${index[0,2]} != $Computer ]
-	then
-		index[0,2]=$Computer
-		return
-	elif [ ${index[2,0]} != $Player ] && [ ${index[2,0]} != $Computer ]
-	then
-		index[2,0]=$Computer
-	return
-	elif [ ${index[2,2]} != $Player ] && [ ${index[2,2]} != $Computer ]
-	then
-		index[2,2]=$Computer
-	return
-	fi
+# Checking for the computer win
+function checkComputerWin()
+{
+	#ROW
+	local row=0
+	local col=0
+	for ((row=0; row<ROW; row++))
+	do
+		if [ ${index[$row,$col]} == $Computer ] && [ ${index[$(($row)),$(($col+1))]} == $Computer ]
+		then
+			if [ ${index[$row,$(($col+2))]} != $Player ]
+			then
+				index[$row,$(($col+2))]=$Computer
+				break
+			fi
+			elif [ ${index[$row,$(($col+1))]} == $Computer ] && [ ${index[$row,$(($col+2))]} == $Computer ]
+			then
+				if [ ${index[$row,$col]} != $Player ]
+				then
+					index[$row,$col]=$Computer
+					break
+				fi
+				elif [ ${index[$row,$col]} == $Computer ] && [ ${index[$row,$(($col+2))]} == $Computer ]
+				then
+					if [ ${index[$row,$(($col+1))]} != $Player ]
+					then
+						index[$row,$(($col+1))]=$Computer
+						break
+					fi
+				fi
+	done
 }
 
-
-
-corners
 reset
 checkPlayer
 toss
 initializeBoard
 getInput
 board
+checkComputerWin
