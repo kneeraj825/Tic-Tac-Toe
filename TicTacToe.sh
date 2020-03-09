@@ -312,6 +312,28 @@ function checkComputerWin()
 	done
 }
 
+#checking the corners
+function corners(){
+	if [ ${index[0,0]} != $Player ] && [ ${index[0,0]} != $Computer ]
+	then
+		index[0,0]=$Computer
+		return
+	elif [ ${index[0,2]} != $Player ] && [ ${index[0,2]} != $Computer ]
+	then
+	index[0,2]=$Computer
+	return
+	elif [ ${index[2,0]} != $Player ] && [ ${index[2,0]} != $Computer ]
+	then
+		index[2,0]=$Computer
+	return
+	elif [ ${index[2,2]} != $Player ] && [ ${index[2,2]} != $Computer ]
+	then
+		index[2,2]=$Computer
+	return
+	fi
+}
+
+corners
 reset
 checkPlayer
 toss
